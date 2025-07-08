@@ -24,7 +24,7 @@
         }
 
         h1{
-            position: absolute;
+            position: relative;
             display: flex;
             align-self: center;
             justify-self: center;
@@ -34,6 +34,8 @@
             color: white;
             text-align: center;
             text-shadow: 0 0 2px black;
+            max-width: 90%;
+            z-index: 2;
         }
     </style>
 </head>
@@ -54,25 +56,39 @@
 
     </section>
 
+    <div id="tapNotice" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+ color: white; font-size: 18px; text-shadow: 0 0 5px black; z-index: 999;">
+  Tap anywhere to start music 🎵
+</div>
 
     <script>
-   const audio = document.getElementById("mySong");
+  document.addEventListener("DOMContentLoaded", () => {
+    const audio = document.getElementById("mySong");
+    const tapNotice = document.getElementById("tapNotice");
 
-    audio.volume = 0; // Start muted
+    const enableAudio = () => {
+      audio.currentTime = 147;
+      audio.volume = 0;
+      audio.play().then(() => {
+        const fadeIn = setInterval(() => {
+          if (audio.volume < 1.0) {
+            audio.volume = Math.min(audio.volume + 0.02, 1);
+          } else {
+            clearInterval(fadeIn);
+          }
+        }, 100);
 
-    audio.addEventListener("loadedmetadata", () => {
-      audio.currentTime = 147; // Start at 140 seconds
-      audio.play();
-
-      // Gradually fade in volume
-      let fadeInterval = setInterval(() => {
-        if (audio.volume < 1.0) {
-          audio.volume = Math.min(audio.volume + 0.02, 1); // Increase volume by 0.02 every 100ms
-        } else {
-          clearInterval(fadeInterval); // Stop when volume reaches 1
+        if (tapNotice) {
+          tapNotice.remove();
         }
-      }, 100); // Run every 100ms
-    });
-    </script>
+        document.body.removeEventListener("click", enableAudio);
+      }).catch(err => {
+        console.error("Audio play failed:", err);
+      });
+    };
+
+    document.body.addEventListener("click", enableAudio);
+  });
+</script>
 </body>
 </html>
